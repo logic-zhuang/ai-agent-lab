@@ -1,0 +1,73 @@
+.todo-form {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 20px;
+}
+
+.form-content {
+  display: grid;
+  grid-template-columns: 1fr 150px 80px 70px;
+  gap: 10px;
+  align-items: center;
+}
+
+.input-text {
+  padding: 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+.input-text:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.input-date,
+.input-priority {
+  padding: 12px 10px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.input-date:focus,
+.input-priority:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.btn-add {
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.btn-add:hover {
+  transform: translateY(-2px);
+}
+
+.btn-add:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 600px) {
+  .form-content {
+    grid-template-columns: 1fr;
+  }
+
+  .input-text,
+  .input-date,
+  .input-priority,
+  .btn-add {
+    width: 100%;
+  }
+}

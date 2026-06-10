@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>待办事项提醒工具</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    #root {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .todo-form {
+      background: #f8f9fa;
+      border-bottom: 1px solid #e0e0e0;
+      padding: 20px;
+    }
+
+    .form-content {
+      display: grid;
+      grid-template-columns: 1fr 150px 80px 70px;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .input-text, .input-date, .input-priority {
+      padding: 12px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .input-text:focus, .input-date:focus, .input-priority:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .btn-add {
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .btn-add:hover {
+      transform: translateY(-2px);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin: 20px;
+    }
+
+    .stat-item {
+      background: #f5f5f5;
+      padding: 15px;
+      text-align: center;
+      border-radius: 8px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 5px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #667eea;
+    }
+
+    .filter-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      padding: 20px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .filter-btn {
+      padding: 8px 16px;
+      border: 2px solid #e0e0e0;
+      background: white;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .filter-btn.active {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+
+    .todo-list {
+      padding: 10px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .todo-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 15px;
+      background: white;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border-left: 4px solid #667eea;
+    }
+
+    .todo-item.completed {
+      opacity: 0.6;
+    }
+
+    .todo-item.overdue {
+      border-left-color: #ff6b6b;
+      background: #fff5f5;
+    }
+
+    .checkbox {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    .todo-content {
+      flex: 1;
+    }
+
+    .todo-text {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .todo-item.completed .todo-text {
+      text-decoration: line-through;
+      color: #999;
+    }
+
+    .todo-meta {
+      display: flex;
+      gap: 10px;
+    }
+
+    .priority-badge, .date-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+
+    .priority-badge {
+      background: #f0f0f0;
+      color: #666;
+    }
+
+    .date-badge {
+      background: #e3f2fd;
+      color: #1976d2;
+    }
+
+    .date-badge.overdue-date {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    .btn-delete {
+      background: transparent;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      color: #ccc;
+    }
+
+    .btn-delete:hover {
+      color: #ff6b6b;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #999;
+    }
+
+    @media (max-width: 600px) {
+      .form-content {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    function TodoItem({ todo, onToggle, onDelete }) {
+      const formatDate = (date) => {
+        if (!date) return '';
+        return new Date(date).toLocaleDateString('zh-CN');
+      };
+
+      const priorityEmoji = { low: '🟢', medium: '🟡', high: '🔴' };
+      const priorityLabel = { low: '低', medium: '中', high: '高' };
+
+      const isOverdue = () => {
+        if (!todo.dueDate || todo.completed) return false;
+        return new Date(todo.dueDate) < new Date();
+      };
+
+      return (
+        <div className={`todo-item ${todo.completed ? 'completed' : ''} ${isOverdue() ? 'overdue' : ''}`}>
+          <input
+            type="checkbox"
+            checked={todo.completed}
+            onChange={() => onToggle(todo.id)}
+            className="checkbox"
+          />
+          <div className="todo-content">
+            <div className="todo-text">{todo.text}</div>
+            <div className="todo-meta">
+              <span className="priority-badge">
+                {priorityEmoji[todo.priority]} {priorityLabel[todo.priority]}
+              </span>
+              {todo.dueDate && (
+                <span className={`date-badge ${isOverdue() ? 'overdue-date' : ''}`}>
+                  📅 {formatDate(todo.dueDate)}
+                </span>
+              )}
+            </div>
+          </div>
+          <button onClick={() => onDelete(todo.id)} className="btn-delete">✕</button>
+        </div>
+      );
+    }
+
+    function TodoList({ todos, onToggle, onDelete }) {
+      const sortedTodos = [...todos].sort((a, b) => {
+        const order = { high: 0, medium: 1, low: 2 };
+        return order[a.priority] - order[b.priority];
+      });
+
+      return (
+        <div className="todo-list">
+          {sortedTodos.map(todo => (
+            <TodoItem key={todo.id} todo={todo} onToggle={onToggle} onDelete={onDelete} />
+          ))}
+        </div>
+      );
+    }
+
+    function TodoForm({ onAdd }) {
+      const [text, setText] = useState('');
+      const [dueDate, setDueDate] = useState('');
+      const [priority, setPriority] = useState('medium');
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (text.trim()) {
+          onAdd(text, dueDate, priority);
+          setText('');
+          setDueDate('');
+          setPriority('medium');
+        }
+      };
+
+      return (
+        <form onSubmit={handleSubmit} className="todo-form">
+          <div className="form-content">
+            <input
+              type="text"
+              placeholder="输入新的待办事项..."
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              className="input-text"
+            />
+            <input
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+              className="input-date"
+            />
+            <select value={priority} onChange={(e) => setPriority(e.target.value)} className="input-priority">
+              <option value="low">低</option>
+              <option value="medium">中</option>
+              <option value="high">高</option>
+            </select>
+            <button type="submit" className="btn-add">添加</button>
+          </div>
+        </form>
+      );
+    }
+
+    function App() {
+      const [todos, setTodos] = useState([]);
+      const [filter, setFilter] = useState('all');
+
+      useEffect(() => {
+        const saved = localStorage.getItem('todos');
+        if (saved) setTodos(JSON.parse(saved));
+      }, []);
+
+      useEffect(() => {
+        localStorage.setItem('todos', JSON.stringify(todos));
+      }, [todos]);
+
+      const addTodo = (text, dueDate, priority) => {
+        const newTodo = {
+          id: Date.now(),
+          text,
+          dueDate,
+          priority,
+          completed: false,
+          createdAt: new Date().toISOString()
+        };
+        setTodos([newTodo, ...todos]);
+      };
+
+      const toggleTodo = (id) => {
+        setTodos(todos.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
+      };
+
+      const deleteTodo = (id) => {
+        setTodos(todos.filter(t => t.id !== id));
+      };
+
+      const filteredTodos = todos.filter(t => {
+        if (filter === 'active') return !t.completed;
+        if (filter === 'completed') return t.completed;
+        return true;
+      });
+
+      const stats = {
+        total: todos.length,
+        completed: todos.filter(t => t.completed).length,
+        active: todos.filter(t => !t.completed).length
+      };
+
+      return (
+        <div className="app">
+          <div className="container">
+            <header className="header">
+              <h1>📋 待办事项提醒</h1>
+              <p className="subtitle">让生活更有条理</p>
+            </header>
+
+            <TodoForm onAdd={addTodo} />
+
+            <div className="stats">
+              <div className="stat-item">
+                <span className="stat-label">总数</span>
+                <span className="stat-value">{stats.total}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">已完成</span>
+                <span className="stat-value">{stats.completed}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">进行中</span>
+                <span className="stat-value">{stats.active}</span>
+              </div>
+            </div>
+
+            <div className="filter-buttons">
+              <button className={`filter-btn ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>全部</button>
+              <button className={`filter-btn ${filter === 'active' ? 'active' : ''}`} onClick={() => setFilter('active')}>进行中</button>
+              <button className={`filter-btn ${filter === 'completed' ? 'active' : ''}`} onClick={() => setFilter('completed')}>已完成</button>
+            </div>
+
+            <TodoList todos={filteredTodos} onToggle={toggleTodo} onDelete={deleteTodo} />
+
+            {todos.length === 0 && (
+              <div className="empty-state">
+                <p>暂无待办事项</p>
+                <p>添加第一个任务开始吧 🚀</p>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
